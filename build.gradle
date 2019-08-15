@@ -1,0 +1,52 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group 'AutomatizacionPruebas'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+mainClassName = 'cl.duoc.automatizacion.Main'
+
+dependencies {
+
+    compile 'com.google.guava:guava:14.0.1'
+    compile 'commons-lang:commons-lang:2.6'
+    compile 'org.slf4j:slf4j-log4j12:1.7.2'
+
+    testCompile 'com.googlecode.jmockit:jmockit:1.2'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile 'io.cucumber:cucumber-java:4.3.1'
+
+    compile('org.seleniumhq.selenium:selenium-java:3.4.0') {
+        exclude group: 'org.seleniumhq.selenium', module: 'selenium-android-driver'
+        exclude group: 'org.seleniumhq.selenium', module: 'selenium-iphone-driver'
+        exclude group: 'org.seleniumhq.selenium', module: 'selenium-safari-driver'
+        exclude group: 'org.webbitserver', module: 'webbit'
+        exclude group: 'commons-codec', module: 'commons-codec'
+        exclude group: 'cglib', module: 'cglib-nodep'
+    }
+}
+
+configurations {
+    cucumberRuntime {
+        extendsFrom testRuntime
+    }
+}
+
+task cucumber() {
+    dependsOn assemble, compileTestJava
+    doLast {
+        javaexec {
+            main = "cucumber.api.cli.Main"
+            classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
+            args = ['--plugin', 'pretty', '--glue', 'gradle.cucumber', 'src/test/resources']
+        }
+    }
+}
